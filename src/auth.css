@@ -1,0 +1,127 @@
+.rooted-account-page { padding-top: 58px; padding-bottom: 68px; }
+.rooted-auth-layout { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 440px); align-items: start; gap: 85px; }
+.rooted-auth-story h1 { font-size: clamp(2.7rem, 4.6vw, 4rem); margin: 18px 0 20px; max-width: 460px; }
+.rooted-account-lead { color: #596451; font-size: 14px; line-height: 1.85; max-width: 470px; }
+.rooted-auth-story .text-link { margin-top: 22px; }
+.rooted-auth-art { position: relative; display: grid; place-items: center; overflow: hidden; height: 235px; margin-top: 32px; border-radius: 75px 12px 12px 12px; background: #e4ebdc; color: #566746; }
+.rooted-auth-art > svg { position: relative; z-index: 1; margin-bottom: 24px; }
+.rooted-auth-ring { position: absolute; width: 220px; height: 220px; border: 1px solid #bdcaae; border-radius: 50%; transform: rotate(-20deg) scaleX(.65); }
+.rooted-auth-ring.second { transform: rotate(45deg) scaleX(.65); }
+.rooted-auth-art > span { position: absolute; bottom: 22px; font: italic 24px Georgia, serif; }
+.rooted-account-panel { padding: 30px; background: #fffef9; border: 1px solid #dbe1d2; border-radius: 12px; min-width: 0; }
+.rooted-account-panel h2 { font-size: 29px; margin-bottom: 24px; }
+.rooted-account-notice { padding: 15px 16px; border: 1px solid #d8dfca; border-radius: 7px; background: #eef1e5; margin-bottom: 24px; color: #4c5c41; font-size: 12px; line-height: 1.75; }
+.rooted-account-notice strong { font-weight: 650; }
+.rooted-account-notice p { margin-top: 4px; }
+.rooted-account-notice .text-link { font-size: 11px; margin-top: 5px; }
+.rooted-account-form { display: flex; flex-direction: column; gap: 20px; }
+.rooted-account-form > label, .rooted-profile-field-pair > label { display: block; font-size: 13px; line-height: 1.65; font-weight: 600; color: #3f543f; }
+.rooted-account-form input:not([type='checkbox']), .rooted-account-form textarea { display: block; width: 100%; min-width: 0; min-height: 48px; padding: 11px 13px; margin-top: 7px; border: 1px solid #cbd5c4; border-radius: 6px; background: #fefefb; color: #2d4436; font: 400 16px/1.6 'Segoe UI', ui-sans-serif, system-ui, sans-serif; }
+.rooted-account-form textarea { resize: vertical; }
+.rooted-account-form input::placeholder { color: #6b7565; }
+.rooted-account-form input:not([type='checkbox']):focus, .rooted-account-form textarea:focus { outline: 2px solid #6e865c; outline-offset: 2px; }
+.rooted-field-hint { display: block; font-size: 11px; font-weight: 400; line-height: 1.75; color: #5d6855; margin-top: 5px; }
+.rooted-form-link { align-self: end; margin-top: -9px; font-size: 12px; text-decoration: underline; text-underline-offset: 3px; min-height: 35px; display: flex; align-items: center; }
+.rooted-account-form > .button { width: 100%; }
+.rooted-account-page button:disabled, .rooted-profile-page button:disabled { opacity: .6; cursor: not-allowed; transform: none; }
+.rooted-account-error { background: #fbefea; color: #7a3626; font-size: 12px; line-height: 1.8; border-radius: 6px; padding: 13px 15px; overflow-wrap: anywhere; }
+.rooted-account-panel > .rooted-account-error { margin-bottom: 20px; }
+.rooted-account-status { font-size: 13px; margin-bottom: 20px; color: #566649; }
+.rooted-auth-switch { margin-top: 22px; text-align: center; font-size: 12px; line-height: 1.9; color: #5c6754; }
+.rooted-auth-switch a { color: #31533c; font-weight: 600; text-decoration: underline; text-underline-offset: 3px; }
+.rooted-account-success { display: flex; align-items: start; gap: 10px; background: #edf3e7; padding: 17px; border-radius: 8px; color: #385a38; font-size: 13px; line-height: 1.85; }
+.rooted-account-success svg { margin-top: 3px; }
+.rooted-account-success p { margin-top: 5px; }
+.rooted-account-success .text-link { margin-top: 10px; }
+.rooted-auth-confirmation p { font-size: 13px; color: #5a6752; line-height: 1.85; margin-bottom: 24px; }
+.rooted-account-icon { display: inline-grid; place-items: center; width: 61px; height: 61px; border-radius: 50%; background: #e3ebd9; color: #566848; margin-bottom: 22px; }
+.rooted-auth-confirmation h2 { margin-bottom: 17px; }
+.rooted-signed-out { display: grid; grid-template-columns: 1.15fr 1fr; gap: 75px; align-items: center; }
+.rooted-signed-out-copy h1 { font-size: clamp(2.6rem, 4.7vw, 4rem); margin: 18px 0 23px; }
+.rooted-signed-out-copy .rooted-account-notice { margin-top: 23px; margin-bottom: 22px; }
+.rooted-account-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 26px 0 17px; }
+.rooted-profile-welcome-art { display: flex; min-height: 355px; align-items: center; justify-content: center; flex-direction: column; gap: 32px; background: #e2ead8; border: 1px solid #d7e0cd; color: #566747; border-radius: 100px 15px 15px 15px; }
+.rooted-profile-welcome-art p { font: italic 28px Georgia, serif; }
+.rooted-profile-page { padding-top: 43px; padding-bottom: 60px; }
+.rooted-profile-heading { display: flex; justify-content: space-between; align-items: center; gap: 24px; margin-bottom: 32px; }
+.rooted-profile-heading h1 { font-size: clamp(2.5rem, 4.4vw, 3.7rem); margin: 15px 0; overflow-wrap: anywhere; }
+.rooted-profile-heading .button { flex-shrink: 0; gap: 9px; }
+.rooted-profile-page > .rooted-account-error, .rooted-profile-page > .rooted-inline-success { margin-bottom: 22px; }
+.rooted-profile-loading { display: flex; gap: 15px; align-items: center; color: #566848; font-size: 14px; padding-block: 36px; }
+.rooted-profile-error > p:not(.rooted-account-error) { margin: 20px 0; font-size: 13px; line-height: 1.8; color: #5b6752; }
+.rooted-profile-overview { display: grid; grid-template-columns: 1fr 1.1fr; gap: 24px; margin-bottom: 27px; }
+.rooted-profile-summary, .rooted-profile-impact { background: #edf1e6; padding: 25px; border-radius: 10px; border: 1px solid #dce4d2; min-width: 0; }
+.rooted-profile-summary { display: flex; align-items: center; gap: 18px; }
+.rooted-profile-avatar { display: inline-grid; place-items: center; width: 65px; height: 65px; flex-shrink: 0; background: #d4e0c5; border: 1px solid #bdcdae; border-radius: 50%; font: 32px Georgia, serif; color: #506542; }
+.rooted-profile-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: inherit; }
+.rooted-profile-summary h2 { font-size: 28px; overflow-wrap: anywhere; }
+.rooted-profile-summary p { display: flex; align-items: center; gap: 5px; margin-top: 9px; font-size: 12px; color: #526347; overflow-wrap: anywhere; }
+.rooted-profile-summary .rooted-profile-private { font-size: 10px; margin-top: 7px; }
+.rooted-profile-impact > p { display: flex; align-items: start; gap: 10px; font-size: 12px; color: #526345; line-height: 1.85; margin-top: 15px; }
+.rooted-profile-impact > p svg { margin-top: 3px; }
+.rooted-profile-metrics { display: flex; flex-wrap: wrap; gap: 20px; margin-top: 17px; }
+.rooted-profile-metrics > div { display: flex; flex-direction: column; gap: 4px; }
+.rooted-profile-metrics strong { font: 31px Georgia, serif; font-weight: 400; }
+.rooted-profile-metrics span { color: #546747; font-size: 10px; }
+.rooted-profile-editor { padding: 30px; }
+.rooted-profile-editor h2 { margin-top: 10px; margin-bottom: 13px; }
+.rooted-profile-description { color: #5b6753; font-size: 13px; line-height: 1.9; margin-bottom: 25px; max-width: 650px; }
+.rooted-profile-field-pair { display: grid; grid-template-columns: 1fr 1fr; gap: 22px; }
+.rooted-optional { font-size: 10px; font-weight: 400; color: #687460; margin-left: 5px; }
+.rooted-interest-fieldset { border: 0; margin: 0; padding: 0; min-width: 0; }
+.rooted-interest-fieldset legend { font-size: 13px; font-weight: 600; color: #3f543f; }
+.rooted-interest-options { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.rooted-interest-options > label { display: inline-flex; align-items: center; gap: 8px; border-radius: 24px; border: 1px solid #cdd8c3; background: #fafbf5; padding: 10px 13px; min-height: 44px; font-size: 12px; color: #4f6444; cursor: pointer; }
+.rooted-interest-options > label.selected { background: #e3ecd9; border-color: #7b9565; color: #2f5035; }
+.rooted-interest-options input { width: 16px; height: 16px; accent-color: #254b3c; margin: 0; }
+.rooted-profile-editor .rooted-account-form > .button { width: fit-content; min-width: 163px; }
+.rooted-inline-success { display: flex; align-items: center; gap: 7px; font-size: 12px; line-height: 1.8; color: #355839; }
+.rooted-profile-activity { margin-top: 37px; }
+.rooted-profile-section-heading { margin-bottom: 20px; }
+.rooted-profile-section-heading h2 { font-size: 30px; }
+.rooted-profile-section-heading p { font-size: 12px; line-height: 1.8; color: #5e6955; margin-top: 8px; }
+.rooted-profile-empty { display: flex; align-items: center; gap: 18px; padding: 24px; border: 1px dashed #cbd7be; background: #f1f4ea; border-radius: 10px; color: #556948; }
+.rooted-profile-empty h3 { font-size: 14px; font-weight: 600; }
+.rooted-profile-empty p { font-size: 12px; line-height: 1.85; color: #5d6855; margin-top: 7px; }
+.rooted-profile-page > .text-link { margin-top: 23px; }
+@media (max-width: 950px) { .rooted-auth-layout { gap: 38px; }.rooted-signed-out { gap: 35px; } }
+@media (max-width: 767px) {
+  .rooted-account-page { padding-top: 31px; padding-bottom: 37px; }
+  .rooted-auth-layout, .rooted-signed-out { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .rooted-auth-story h1 { font-size: 42px; margin-top: 16px; margin-bottom: 17px; }
+  .rooted-account-lead { font-size: 13px; }
+  .rooted-auth-art { display: none; }
+  .rooted-auth-story .text-link { margin-top: 10px; font-size: 11px; }
+  .rooted-account-panel { padding: 23px 20px; }
+  .rooted-account-panel h2 { font-size: 27px; margin-bottom: 21px; }
+  .rooted-account-notice { padding: 13px 14px; font-size: 11px; }
+  .rooted-account-form { gap: 20px; }
+  .rooted-account-form > label, .rooted-profile-field-pair > label { font-size: 12px; }
+  .rooted-field-hint { font-size: 10px; }
+  .rooted-signed-out-copy h1 { font-size: 43px; }
+  .rooted-signed-out .rooted-account-icon { margin-bottom: 16px; }
+  .rooted-profile-welcome-art { min-height: 230px; border-top-left-radius: 65px; gap: 18px; }
+  .rooted-profile-welcome-art svg { width: 83px; }
+  .rooted-profile-welcome-art p { font-size: 24px; }
+  .rooted-profile-page { padding-top: 30px; padding-bottom: 40px; }
+  .rooted-profile-heading { flex-wrap: wrap; gap: 17px; margin-bottom: 24px; }
+  .rooted-profile-heading h1 { font-size: 39px; margin-top: 13px; }
+  .rooted-profile-heading .button { min-height: 44px; padding: 10px 15px; font-size: 11px; }
+  .rooted-profile-overview { grid-template-columns: minmax(0, 1fr); gap: 14px; margin-bottom: 20px; }
+  .rooted-profile-summary, .rooted-profile-impact { padding: 22px 19px; }
+  .rooted-profile-summary h2 { font-size: 27px; }
+  .rooted-profile-summary { gap: 15px; }
+  .rooted-profile-avatar { width: 57px; height: 57px; font-size: 28px; }
+  .rooted-profile-editor h2 { margin-top: 10px; margin-bottom: 12px; }
+  .rooted-profile-description { font-size: 12px; margin-bottom: 21px; }
+  .rooted-profile-field-pair { grid-template-columns: minmax(0, 1fr); gap: 19px; }
+  .rooted-interest-fieldset legend { font-size: 12px; }
+  .rooted-interest-options { gap: 7px; }
+  .rooted-interest-options > label { font-size: 11px; padding: 10px 11px; }
+  .rooted-profile-editor .rooted-account-form > .button { width: 100%; }
+  .rooted-profile-section-heading h2 { font-size: 28px; }
+  .rooted-profile-activity { margin-top: 29px; }
+  .rooted-profile-empty { align-items: start; padding: 22px 18px; gap: 13px; }
+  .rooted-profile-empty h3 { font-size: 13px; }
+  .rooted-profile-empty p { font-size: 11px; }
+}
