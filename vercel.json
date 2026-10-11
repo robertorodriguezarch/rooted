@@ -7,6 +7,10 @@
   },
   "rewrites": [
     {
+      "source": "/api/:path*{/}?",
+      "destination": "/api/[...path]"
+    },
+    {
       "source": "/((?!api(?:/|$)|src(?:/|$)|node_modules(?:/|$)|assets(?:/|$)|_vercel(?:/|$)|@|__vite|__open-in-editor(?:/|$)|.*\\.[^/]+$).*)",
       "destination": "/index.html"
     }

@@ -15,8 +15,14 @@ assert.equal(error, null, 'Vercel must accept the routing configuration')
 
 function rewrite(path) {
   const url = new URL(path, 'http://rooted.test')
-  const route = routes.find((candidate) => candidate.src && new RegExp(candidate.src).test(url.pathname))
-  if (route?.dest) url.pathname = route.dest
+  for (const candidate of routes) {
+    const match = candidate.src && url.pathname.match(new RegExp(candidate.src))
+    if (!match || !candidate.dest) continue
+    const destination = new URL(candidate.dest.replace(/\$(\d+)/g, (_, index) => match[index] ?? ''), url)
+    url.pathname = destination.pathname
+    for (const [name, value] of destination.searchParams) url.searchParams.set(name, value)
+    break
+  }
   return `${url.pathname}${url.search}`
 }
 
@@ -37,9 +43,28 @@ const serverScript = String.raw`
   const cacheDir = await mkdtemp(join(tmpdir(), 'rooted-routing-vite-'))
   const rewrite = (path) => {
     const url = new URL(path, 'http://rooted.test')
-    const route = routes.find((candidate) => candidate.src && new RegExp(candidate.src).test(url.pathname))
-    if (route?.dest) url.pathname = route.dest
+    for (const candidate of routes) {
+      const match = candidate.src && url.pathname.match(new RegExp(candidate.src))
+      if (!match || !candidate.dest) continue
+      const destination = new URL(candidate.dest.replace(/\$(\d+)/g, (_, index) => match[index] ?? ''), url)
+      url.pathname = destination.pathname
+      for (const [name, value] of destination.searchParams) url.searchParams.set(name, value)
+      break
+    }
     return url.pathname + url.search
+  }
+  const functionPath = '/api/[...path]'
+  const { default: api } = await import('./api/[...path].js')
+  const dispatchApi = (req, res) => {
+    const routed = new URL(rewrite(req.url), 'http://rooted.test')
+    if (routed.pathname !== functionPath) return false
+    // Node function invocation keeps the incoming pathname and adds rewritten
+    // query parameters; the destination selects the function, not its API route.
+    const incoming = new URL(req.url, 'http://rooted.test')
+    for (const [name, value] of routed.searchParams) incoming.searchParams.set(name, value)
+    req.url = incoming.pathname + incoming.search
+    api(req, res)
+    return true
   }
   const listen = (server) => new Promise((resolve, reject) => {
     server.once('error', reject)
@@ -53,6 +78,7 @@ const serverScript = String.raw`
   await vite.listen()
   const vitePort = vite.httpServer.address().port
   const dev = createHttpServer((req, res) => {
+    if (dispatchApi(req, res)) return
     const upstream = httpRequest({
       host: '127.0.0.1', port: vitePort, path: rewrite(req.url),
       method: req.method, headers: req.headers,
@@ -78,16 +104,15 @@ const serverScript = String.raw`
   for (const path of ['/favicon.svg', '/images/forest.jpg']) {
     files.set(path, await readFile(join(process.cwd(), 'public', path)))
   }
-  const { default: api } = await import('./api/[...path].js')
   const mime = { '.html': 'text/html', '.js': 'text/javascript', '.css': 'text/css', '.svg': 'image/svg+xml', '.jpg': 'image/jpeg' }
   const production = createHttpServer(async (req, res) => {
     try {
       const original = new URL(req.url, 'http://rooted.test').pathname
+      if (dispatchApi(req, res)) return
       // Existing build output wins before the SPA fallback (Vercel filesystem
       // phase). Unmatched paths apply the same converted rewrite as dev.
       req.url = files.has(original) ? req.url : rewrite(req.url)
       const path = new URL(req.url, 'http://rooted.test').pathname
-      if (path === '/api' || path.startsWith('/api/')) return api(req, res)
       const body = files.get(path)
       if (body === undefined) { res.statusCode = 404; res.end('Not found'); return }
       const extension = path.slice(path.lastIndexOf('.'))
@@ -171,11 +196,22 @@ test('SPA fallback excludes Vite URLs, application modules, assets, and the API 
     '/node_modules/.vite/deps/react.js?v=test', '/assets/main.hash.js',
     '/_vercel/speed-insights', '/_vercel/insights/script.js',
     '/favicon.svg', '/images/forest.jpg', '/missing-file.js',
-    '/api', '/api/', '/api/me', '/api/events/event-id/registration',
   ]) assert.equal(rewrite(path), path, `${path} must reach its original handler`)
   for (const path of ['/', '/explore', '/events/event-id', '/auth/callback', '/unknown/path']) {
     assert.equal(rewrite(path), '/index.html', `${path} must retain the SPA fallback`)
   }
+})
+
+test('explicit API rewrite selects the Node function for every path depth and keeps incoming query parameters', () => {
+  for (const path of ['/api', '/api/', '/api/me', '/api/grow-neighbor/activity', '/api/events/event-id/registration', '/api/deep/missing/path']) {
+    const routed = new URL(rewrite(path), 'http://rooted.test')
+    assert.equal(routed.pathname, '/api/[...path]', `${path} must select the API function`)
+  }
+  const queried = new URL(rewrite('/api/events/event-id?category=cleanup&q=river'), 'http://rooted.test')
+  assert.equal(queried.pathname, '/api/[...path]')
+  assert.equal(queried.searchParams.get('category'), 'cleanup')
+  assert.equal(queried.searchParams.get('q'), 'river')
+  assert.equal(queried.searchParams.get('path'), 'events/event-id')
 })
 
 test('rewrite-aware development serves real Vite JavaScript, CSS, frontend routes, and API JSON', async () => {
@@ -194,6 +230,9 @@ test('rewrite-aware development serves real Vite JavaScript, CSS, frontend route
   assert.equal(JSON.parse(await response(urls.dev, '/api/me', /application\/json/, 401)).error.code, 'authentication_required')
   await response(urls.dev, '/api', /application\/json/, 404)
   await response(urls.dev, '/api/no-such-endpoint', /application\/json/, 404)
+  assert.equal(JSON.parse(await response(urls.dev, '/api/grow-neighbor/activity', /application\/json/, 401)).error.code, 'authentication_required')
+  assert.equal(JSON.parse(await response(urls.dev, '/api/events/not-a-uuid', /application\/json/, 503)).error.code, 'database_unconfigured')
+  assert.equal(JSON.parse(await response(urls.dev, '/api/events/event-id/registration', /application\/json/, 405)).error.code, 'method_not_allowed')
 })
 
 test('production output retains assets, React Router fallback, and API JSON without swallowing missing assets', async () => {
@@ -216,4 +255,8 @@ test('production output retains assets, React Router fallback, and API JSON with
   assert.equal(JSON.parse(await response(urls.production, '/api/me', /application\/json/, 401)).error.code, 'authentication_required')
   await response(urls.production, '/api', /application\/json/, 404)
   await response(urls.production, '/api/no-such-endpoint', /application\/json/, 404)
+  assert.equal(JSON.parse(await response(urls.production, '/api/grow-neighbor/activity', /application\/json/, 401)).error.code, 'authentication_required')
+  assert.equal(JSON.parse(await response(urls.production, '/api/events/not-a-uuid', /application\/json/, 503)).error.code, 'database_unconfigured')
+  assert.equal(JSON.parse(await response(urls.production, '/api/events/event-id/registration', /application\/json/, 405)).error.code, 'method_not_allowed')
+  assert.equal(JSON.parse(await response(urls.production, '/api/deep/missing/path', /application\/json/, 404)).error.code, 'route_not_found')
 })
