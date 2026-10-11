@@ -136,7 +136,9 @@ test('mobile navigation reaches events, account gates and clearly planned featur
   }
   await page.goto('/grow-neighbor')
   await expect(page.getByRole('heading', { level: 1 })).toBeVisible()
-  await expect(page.getByText(/Phase [2-6]|coming soon|planned/i).first()).toBeVisible()
+  await expect(page.getByRole('heading', { name: 'Good things start with a question.', exact: true })).toBeVisible()
+  await expect(page.getByText('Accounts aren’t connected in this environment yet. Grow Neighbor will be available once Supabase is configured.', { exact: true })).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Ask Grow Neighbor', exact: true })).toHaveCount(0)
 })
 
 test('unconfigured account pages explain setup and cannot submit invented accounts', async ({ page }) => {

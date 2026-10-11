@@ -41,6 +41,10 @@ test('authentication requires a bearer token and configuration accepts only secu
   assert.equal(readAccessToken({ headers: {} }, false), null)
   assert.equal(getAuthConfiguration({ SUPABASE_URL: 'http://supabase.example.com', SUPABASE_PUBLISHABLE_KEY: 'key' }), null)
   assert.ok(getAuthConfiguration({ VITE_SUPABASE_URL: 'https://example.supabase.co', VITE_SUPABASE_PUBLISHABLE_KEY: 'public-key' }))
+  assert.deepEqual(getAuthConfiguration({ SUPABASE_URL: ' https://example.supabase.co ', SUPABASE_PUBLISHABLE_KEY: ' public-key ' }), {
+    url: 'https://example.supabase.co', key: 'public-key',
+  })
+  assert.equal(getAuthConfiguration({ SUPABASE_URL: 'https://example.supabase.co', SUPABASE_PUBLISHABLE_KEY: '   ' }), null)
 })
 
 test('auth requests preserve request options and caller cancellation, and abort stalled upstream requests', async () => {

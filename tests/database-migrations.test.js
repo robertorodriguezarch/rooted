@@ -6,7 +6,7 @@ import { join } from 'node:path'
 import { after, before, describe, it } from 'node:test'
 import pg from 'pg'
 import { createPool, databaseOptions } from '../server/db.js'
-import { MigrationIntegrityError, runMigrations } from '../scripts/migrate.js'
+import { MigrationIntegrityError, readMigrations, runMigrations } from '../scripts/migrate.js'
 import { sampleId, seed } from '../scripts/seed.js'
 import { events } from '../src/data/events.js'
 
@@ -33,19 +33,21 @@ describe('PostgreSQL migrations and sample seed', { skip: !process.env.DATABASE_
   })
 
   it('applies once, rejects changed history, and rolls back a failed new migration', async () => {
-    assert.deepEqual(await runMigrations(pool), ['001_initial_schema.sql'])
+    const migrations = await readMigrations()
+    assert.deepEqual(await runMigrations(pool), migrations.map(({ filename }) => filename))
     assert.deepEqual(await runMigrations(pool), [])
     const temporaryDirectory = await mkdtemp(join(tmpdir(), 'rooted-migrations-'))
     try {
       const initial = await readFile(new URL('../db/migrations/001_initial_schema.sql', import.meta.url), 'utf8')
       const initialPath = join(temporaryDirectory, '001_initial_schema.sql')
+      for (const { filename, sql } of migrations) await writeFile(join(temporaryDirectory, filename), sql)
       await writeFile(initialPath, `${initial}\n-- Changed historical migration\n`)
       await assert.rejects(runMigrations(pool, { migrationsDirectory: temporaryDirectory }), MigrationIntegrityError)
       await writeFile(initialPath, initial)
-      await writeFile(join(temporaryDirectory, '002_failed.sql'), 'CREATE TABLE should_rollback (id integer); SELECT * FROM missing_table;')
+      await writeFile(join(temporaryDirectory, '999_failed.sql'), 'CREATE TABLE should_rollback (id integer); SELECT * FROM missing_table;')
       await assert.rejects(runMigrations(pool, { migrationsDirectory: temporaryDirectory }), { code: '42P01' })
       assert.equal((await pool.query("SELECT to_regclass('should_rollback') AS name")).rows[0].name, null)
-      assert.equal((await pool.query('SELECT count(*)::int AS count FROM schema_migrations')).rows[0].count, 1)
+      assert.equal((await pool.query('SELECT count(*)::int AS count FROM schema_migrations')).rows[0].count, migrations.length)
       assert.deepEqual(await runMigrations(pool), [])
     } finally {
       await rm(temporaryDirectory, { recursive: true, force: true })

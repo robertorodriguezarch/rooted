@@ -1,5 +1,14 @@
 {
+  "framework": "vite",
+  "functions": {
+    "api/**/*.js": {
+      "maxDuration": 60
+    }
+  },
   "rewrites": [
-    { "source": "/((?!api/).*)", "destination": "/index.html" }
+    {
+      "source": "/((?!api(?:/|$)|src(?:/|$)|node_modules(?:/|$)|assets(?:/|$)|_vercel(?:/|$)|@|__vite|__open-in-editor(?:/|$)|.*\\.[^/]+$).*)",
+      "destination": "/index.html"
+    }
   ]
 }

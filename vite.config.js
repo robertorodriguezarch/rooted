@@ -5,6 +5,10 @@ import tailwindcss from '@tailwindcss/vite';
 const api = {
   name: 'rooted-local-api',
   async configureServer(server) {
+    // Local API verification must use the same project as the browser, including
+    // Vite mode files. Production Functions keep their explicit server settings.
+    process.env.SUPABASE_URL = server.config.env.VITE_SUPABASE_URL?.trim() || '';
+    process.env.SUPABASE_PUBLISHABLE_KEY = server.config.env.VITE_SUPABASE_PUBLISHABLE_KEY?.trim() || '';
     const { handleApi } = await import('./server/router.js');
     server.middlewares.use((request, response, next) => {
       if (request.url?.split('?')[0] === '/api' || request.url?.startsWith('/api/')) return handleApi(request, response);

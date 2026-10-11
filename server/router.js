@@ -3,6 +3,8 @@ import { getPool, withTransaction } from './db.js'
 import { ensureProfile, readAccessToken, uuidPattern, verifyAccessToken } from './auth.js'
 import { ApiError, publicError } from './errors.js'
 import { validateEvent, validateProfile } from './validation.js'
+import { getGeminiConfiguration, recommendEvents, validateRecommendations } from './gemini.js'
+import { validateAssistantQuestion, reserveAssistantRequest, recordAssistantActivity, readAssistantActivity } from './grow-neighbor.js'
 
 const eventSelect = `SELECT e.*, p.display_name AS organizer_name, c.name AS community_name,
   (SELECT count(*)::integer FROM event_registrations r WHERE r.event_id = e.id AND r.status = 'registered') AS participants,
@@ -111,13 +113,58 @@ export function createApiHandler(options = {}) {
       const path = url.pathname.replace(/\/+$/, '')
       const method = request.method?.toUpperCase() ?? 'GET'
 
+      if (path === '/api/grow-neighbor/activity' && method === 'GET') {
+        const user = await authentication(request)
+        return reply(response, 200, await readAssistantActivity(poolProvider(), user.id, clock()))
+      }
+
+      if (path === '/api/grow-neighbor' && method === 'POST') {
+        const user = await authentication(request)
+        const question = validateAssistantQuestion(await readBody(request))
+        const configuration = options.recommend ? { model: 'test-model' } : getGeminiConfiguration()
+        if (!configuration) throw new ApiError(503, 'Grow Neighbor is waiting for its Gemini connection. Configure GEMINI_API_KEY on the server.', 'ai_unconfigured')
+        const pool = poolProvider()
+        await ensureProfile(pool, user)
+        await reserveAssistantRequest(pool, user.id, clock())
+        const started = Date.now()
+        let completed = false
+        try {
+          const { rows } = await pool.query(`${eventSelect} WHERE e.status='published' AND e.is_sample=false AND e.starts_at > $2
+            AND ($3='' OR lower(e.city)=lower($3))
+            AND (e.capacity IS NULL OR e.capacity > (SELECT count(*) FROM event_registrations r WHERE r.event_id=e.id AND r.status='registered'))
+            ORDER BY e.starts_at, e.id LIMIT 30`, [user.id, new Date(clock()), question.city])
+          const candidates = rows.map(eventDto)
+          const generated = await (options.recommend ?? recommendEvents)({ ...question, events: candidates })
+          const result = validateRecommendations(generated, candidates)
+          // Recheck availability after the model responds. Cards always use
+          // database fields, never model-supplied titles, dates or URLs.
+          const { rows: current } = result.eventIds.length ? await pool.query(`${eventSelect}
+            WHERE e.id=ANY($2::uuid[]) AND e.status='published' AND e.is_sample=false AND e.starts_at > $3
+            AND (e.capacity IS NULL OR e.capacity > (SELECT count(*) FROM event_registrations r WHERE r.event_id=e.id AND r.status='registered'))`,
+          [user.id, result.eventIds, new Date(clock())]) : { rows: [] }
+          const available = new Map(current.map((row) => [row.id, eventDto(row)]))
+          const recommendations = result.eventIds.flatMap((id) => available.has(id) ? [available.get(id)] : [])
+          await recordAssistantActivity(pool, { userId: user.id, model: configuration.model, now: clock(), latencyMs: Date.now() - started, success: true, recommendationCount: recommendations.length })
+          completed = true
+          return reply(response, 200, { answer: result.answer, recommendations, model: result.model || configuration.model })
+        } catch (error) {
+          if (!completed) await recordAssistantActivity(pool, { userId: user.id, model: configuration.model, now: clock(), latencyMs: Date.now() - started, success: false, recommendationCount: 0, errorCode: publicError(error).code }).catch(() => {})
+          throw error
+        }
+      }
+
       if (path === '/api/health' && method === 'GET') {
         const auth = options.authConfigured ?? Boolean(getAuthConfiguration())
         const configured = options.databaseConfigured ?? Boolean(options.pool || process.env.DATABASE_URL)
         let database = false
         if (configured) {
           try {
-            const { rows } = await poolProvider().query("SELECT to_regclass('profiles') IS NOT NULL AND to_regclass('events') IS NOT NULL AS ready")
+            const { rows } = await poolProvider().query(`SELECT
+              to_regclass('profiles') IS NOT NULL AND
+              to_regclass('events') IS NOT NULL AND
+              to_regclass('event_registrations') IS NOT NULL AND
+              to_regclass('ai_request_activity') IS NOT NULL AND
+              to_regclass('ai_request_limits') IS NOT NULL AS ready`)
             database = Boolean(rows[0]?.ready)
           } catch { /* Health reports only readiness, never connection details. */ }
         }
@@ -218,7 +265,7 @@ export function createApiHandler(options = {}) {
         return reply(response, 200, result)
       }
 
-      const allowed = path === '/api/health' ? ['GET']
+      const allowed = path === '/api/grow-neighbor' ? ['POST'] : path === '/api/grow-neighbor/activity' ? ['GET'] : path === '/api/health' ? ['GET']
         : path === '/api/events' ? ['GET', 'POST']
           : path === '/api/me' ? ['GET', 'PATCH']
             : detail ? ['GET', 'PATCH'] : registration ? ['POST', 'DELETE'] : null

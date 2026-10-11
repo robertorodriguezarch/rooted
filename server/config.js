@@ -10,8 +10,8 @@ export function loadServerEnvironment(directory = process.cwd()) {
 loadServerEnvironment()
 
 export function getAuthConfiguration(environment = process.env) {
-  const url = environment.SUPABASE_URL || environment.VITE_SUPABASE_URL
-  const key = environment.SUPABASE_PUBLISHABLE_KEY || environment.VITE_SUPABASE_PUBLISHABLE_KEY
+  const url = (environment.SUPABASE_URL || environment.VITE_SUPABASE_URL)?.trim()
+  const key = (environment.SUPABASE_PUBLISHABLE_KEY || environment.VITE_SUPABASE_PUBLISHABLE_KEY)?.trim()
   if (!url || !key) return null
   try {
     const parsed = new URL(url)

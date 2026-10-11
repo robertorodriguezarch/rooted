@@ -11,6 +11,18 @@ The Supabase project URL and public publishable key configure authentication. Ti
 
 Rooted uses PKCE for confirmation and recovery. Open the email link in the same browser where you requested it. If a signup confirmation opens elsewhere, return to the sign-in page after confirming. Password recovery must complete through the emailed recovery link. Configure Supabase email delivery for a public launch and check the provider's sending limits before inviting users.
 
+### Backend authentication troubleshooting
+
+If sign-in succeeds but Profile, Create or Grow Neighbor reports **Account services are temporarily unavailable**, the browser reached Supabase but the backend could not complete its separate session-verification request. Run `npm run check:auth` from the repository root. It makes read-only requests, reports configuration comparisons and safe network error codes, and never prints keys, tokens, passwords or response bodies. It does not query or change the database.
+
+Keep both `SUPABASE_URL` and `VITE_SUPABASE_URL` set to the project's API URL (`https://tkcakmhjmqxshsuqfbtq.supabase.co` for this project), with matching publishable keys. A dashboard URL is not the API URL. During `npm run dev`, the local API uses Vite's resolved `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY`, so stale server settings cannot point verification at a different project. This includes Vite mode files such as `.env.development.local`; exported public `VITE_*` shell values still take precedence over these files. A missing frontend auth setting leaves the local API unconfigured.
+
+Production Functions and standalone server scripts retain explicit `SUPABASE_*` precedence over the `VITE_*` fallback. Their exported shell values take precedence over `.env.local`, which takes precedence over `.env`. `npm run check:auth` checks these standalone settings, so an old exported `SUPABASE_*` value can still make that diagnostic report a mismatch even after local Vite is working. Keep production server settings matched to the frontend build settings, and remove stale local shell overrides before running the standalone diagnostic.
+
+A DNS error means Node cannot resolve the host; a connection error or timeout points to routing, proxy, VPN or firewall access; a certificate error requires fixing the trusted certificate configuration. Do not disable TLS verification. Browser access and a working Gemini connection do not establish that Node can reach the Supabase host. Restart Vite after changing configuration, then use the exact port printed by the new process. If it selects port 5174, an older process may still be serving different code or settings on 5173. Supabase email redirect settings must match the origin you actually use.
+
+The diagnostic deliberately sends an invalid token to the verification endpoint and expects a rejection: HTTP 401, or HTTP 403 with Supabase's `bad_jwt` code. This confirms that the endpoint is reachable; it does not validate a user's session. After it passes, sign out, sign back in and open Profile to test the actual protected workflow.
+
 ## Tiger Data
 
 1. Sign in at [Tiger Data](https://www.tigerdata.com/) and create a PostgreSQL/Timescale service for Rooted. Choose a region near your users and an appropriate plan. Retain the generated database password securely; creating or upgrading a service may incur provider charges.
@@ -51,4 +63,8 @@ The current cloud proxy now allows that hostname, but native DNS returns `EAI_AG
 
 Use Node 24 and `NODE_USE_ENV_PROXY=1` for server-side HTTP requests in this cloud workspace. Preserve the platform's proxy and certificate configuration. Local development outside this cloud typically does not need this setting.
 
-For Vercel, set the public `VITE_` values before building, add server-side Supabase settings and `DATABASE_URL`, and apply migrations separately before serving live traffic. Supabase redirect URLs must match the deployed origin. Rooted uses Vercel Functions for the API and a client-route rewrite for React pages. Deployment is a later step; no deployment or production migration has been performed during this milestone.
+For Vercel, set the public `VITE_` values before building, add matching server-side Supabase settings and `DATABASE_URL`, and apply migrations separately before serving live traffic. Supabase redirect URLs must match the deployed origin. Rooted uses Vercel Functions for the API and a client-route rewrite for React pages. Follow [the production deployment guide](deploy.md) for the existing project and release checks.
+
+## Gemini and the demo
+
+Follow [the demo guide](demo.md) to add the server-only Gemini key, apply the additive assistant migration and enable the Timescale request-activity hypertable. Use `GEMINI_MODEL=gemini-flash-lite-latest`, which was verified with an actual structured Gemini response. Run `npm run check:gemini` before recording and verify real event recommendation → registration → Profile persistence in live mode. Existing database credentials and migration history stay unchanged.

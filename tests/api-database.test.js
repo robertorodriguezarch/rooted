@@ -2,6 +2,9 @@ import test from 'node:test'
 import assert from 'node:assert/strict'
 import { randomUUID } from 'node:crypto'
 import { Readable } from 'node:stream'
+import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises'
+import { tmpdir } from 'node:os'
+import { join } from 'node:path'
 import pg from 'pg'
 import { databaseOptions } from '../server/db.js'
 import { createApiHandler } from '../server/router.js'
@@ -16,6 +19,35 @@ async function invoke(handler, { method = 'GET', path = '/api/me', token, body }
 }
 
 const testUrl = process.env.DATABASE_TEST_URL
+
+test('real PostgreSQL: health requires the assistant migration before reporting ready', { skip: !testUrl }, async () => {
+  const schema = `health_test_${randomUUID().replaceAll('-', '')}`
+  const admin = new pg.Pool(databaseOptions(testUrl))
+  await admin.query(`CREATE SCHEMA ${schema}`)
+  const pool = new pg.Pool({ ...databaseOptions(testUrl), options: `-c search_path=${schema},public` })
+  const migrationsDirectory = await mkdtemp(join(tmpdir(), 'rooted-health-migrations-'))
+  const handler = createApiHandler({ pool, authConfigured: true })
+  try {
+    // Copy the unchanged historical migration; the application's real database
+    // and migration files are never modified by this isolated readiness check.
+    const initial = await readFile(new URL('../db/migrations/001_initial_schema.sql', import.meta.url), 'utf8')
+    await writeFile(join(migrationsDirectory, '001_initial_schema.sql'), initial)
+    assert.deepEqual(await runMigrations(pool, { migrationsDirectory }), ['001_initial_schema.sql'])
+    assert.deepEqual(await invoke(handler, { path: '/api/health' }), {
+      status: 503, body: { status: 'degraded', database: false, auth: true },
+    })
+
+    assert.deepEqual(await runMigrations(pool), ['002_grow_neighbor.sql'])
+    assert.deepEqual(await invoke(handler, { path: '/api/health' }), {
+      status: 200, body: { status: 'ready', database: true, auth: true },
+    })
+  } finally {
+    await pool.end()
+    await admin.query(`DROP SCHEMA ${schema} CASCADE`)
+    await admin.end()
+    await rm(migrationsDirectory, { recursive: true, force: true })
+  }
+})
 
 test('real PostgreSQL: profiles, authorization, event capacity and verified-only impact', { skip: !testUrl }, async () => {
   const schema = `api_test_${randomUUID().replaceAll('-', '')}`

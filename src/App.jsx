@@ -8,6 +8,7 @@ import Upcoming, { NotFound } from './pages/Upcoming.jsx';
 const Auth = lazy(() => import('./pages/Auth.jsx'));
 const Profile = lazy(() => import('./pages/Profile.jsx'));
 const CreateEvent = lazy(() => import('./pages/CreateEvent.jsx'));
+const GrowNeighbor = lazy(() => import('./pages/GrowNeighbor.jsx'));
 
 class ErrorBoundary extends Component {
   state = { failed: false };
@@ -19,5 +20,5 @@ class ErrorBoundary extends Component {
 }
 
 export default function App() {
-  return <ErrorBoundary><Routes><Route element={<Layout />}><Route index element={<Home />} /><Route path="explore" element={<Explore />} /><Route path="events/:id" element={<EventDetail />} /><Route path="create" element={<CreateEvent />} /><Route path="profile" element={<Profile />} />{[['login', 'login'], ['signup', 'signup'], ['forgot-password', 'forgot'], ['reset-password', 'reset'], ['auth/callback', 'callback']].map(([path, mode]) => <Route key={path} path={path} element={<Auth mode={mode} />} />)}{['community', 'grow-neighbor'].map(page => <Route key={page} path={page} element={<Upcoming page={page} />} />)}<Route path="*" element={<NotFound />} /></Route></Routes></ErrorBoundary>;
+  return <ErrorBoundary><Routes><Route element={<Layout />}><Route index element={<Home />} /><Route path="explore" element={<Explore />} /><Route path="events/:id" element={<EventDetail />} /><Route path="create" element={<CreateEvent />} /><Route path="profile" element={<Profile />} /><Route path="grow-neighbor" element={<GrowNeighbor />} />{[['login', 'login'], ['signup', 'signup'], ['forgot-password', 'forgot'], ['reset-password', 'reset'], ['auth/callback', 'callback']].map(([path, mode]) => <Route key={path} path={path} element={<Auth mode={mode} />} />)}<Route path="community" element={<Upcoming page="community" />} /><Route path="*" element={<NotFound />} /></Route></Routes></ErrorBoundary>;
 }

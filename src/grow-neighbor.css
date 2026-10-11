@@ -1,0 +1,106 @@
+.grow-neighbor-page { padding-top: 43px; padding-bottom: 58px; }
+.grow-intro { max-width: 730px; margin-bottom: 29px; }
+.grow-intro h1 { margin: 16px 0 20px; font-size: clamp(2.6rem, 4.5vw, 3.8rem); }
+.grow-intro > p { max-width: 620px; color: #596451; font-size: 14px; line-height: 1.85; }
+.grow-question-panel { padding: 29px; border: 1px solid #dbe1d2; border-radius: 13px; background: #fffef9; }
+.grow-panel-heading { display: flex; align-items: center; gap: 15px; }
+.grow-panel-icon { display: inline-grid; place-items: center; width: 49px; height: 49px; flex-shrink: 0; border-radius: 50%; background: #e7eddf; color: #536846; }
+.grow-panel-heading h2 { font-size: 28px; }
+.grow-panel-heading p { margin-top: 6px; color: #5e6956; font-size: 12px; line-height: 1.7; }
+.grow-prompts { display: flex; flex-wrap: wrap; gap: 9px; margin: 24px 0; }
+.grow-prompts > button { min-height: 44px; padding: 10px 14px; border: 1px solid #cdd8c3; border-radius: 22px; background: #f3f6ec; color: #3e593c; font-size: 12px; line-height: 1.55; text-align: left; }
+.grow-prompts > button:hover { background: #e6eedc; }
+.grow-question-form > label, .grow-form-bottom > label { display: block; color: #3f543f; font-size: 13px; font-weight: 600; line-height: 1.7; }
+.grow-question-form textarea, .grow-question-form input { display: block; width: 100%; min-width: 0; padding: 11px 13px; margin-top: 7px; border: 1px solid #cbd5c4; border-radius: 7px; background: #fefefb; color: #2d4436; font: 400 16px/1.6 'Segoe UI', ui-sans-serif, system-ui, sans-serif; }
+.grow-question-form textarea { min-height: 132px; resize: vertical; }
+.grow-question-form input { min-height: 48px; }
+.grow-question-form textarea::placeholder, .grow-question-form input::placeholder { color: #687460; }
+.grow-question-form textarea:focus, .grow-question-form input:focus { outline: 2px solid #6e865c; outline-offset: 2px; }
+.grow-field-hint { display: flex; justify-content: space-between; align-items: start; gap: 16px; color: #5d6855; font-size: 11px; line-height: 1.75; margin-top: 8px; }
+.grow-field-hint > span:last-child { flex-shrink: 0; }
+.grow-form-bottom { display: flex; align-items: end; gap: 22px; margin-top: 20px; }
+.grow-form-bottom > label { flex: 1; max-width: 360px; }
+.grow-form-bottom > label > svg { display: inline-block; margin-right: 5px; vertical-align: -3px; }
+.grow-form-bottom > .button { margin-left: auto; gap: 12px; }
+.grow-neighbor-page button:disabled { opacity: .65; cursor: not-allowed; transform: none; }
+.grow-error { margin-top: 20px; padding: 15px 17px; border-radius: 7px; background: #fbefea; color: #793a28; font-size: 13px; line-height: 1.8; overflow-wrap: anywhere; }
+.grow-error .text-link { min-height: 40px; margin-top: 3px; }
+.grow-thinking { display: flex; align-items: center; gap: 13px; min-height: 85px; padding-block: 24px; color: #536947; font-size: 13px; line-height: 1.8; }
+.grow-answer { margin-top: 32px; }
+.grow-answer > h2 { margin: 11px 0 14px; font-size: 33px; }
+.grow-asked { margin-bottom: 17px; font-size: 12px; color: #5b6852; overflow-wrap: anywhere; line-height: 1.8; }
+.grow-answer-text { padding: 22px 24px; border: 1px solid #d7e1cb; border-radius: 10px; background: #edf2e6; color: #354f39; font-size: 14px; line-height: 1.95; white-space: pre-wrap; overflow-wrap: anywhere; }
+.grow-answer-note { margin-top: 10px; color: #616d59; font-size: 11px; line-height: 1.8; }
+.grow-recommendations { margin-top: 28px; }
+.grow-recommendation-heading { margin-bottom: 20px; }
+.grow-recommendation-heading h3 { font: 400 29px/1.2 Georgia, serif; letter-spacing: -.04em; }
+.grow-recommendation-heading p { margin-top: 8px; font-size: 12px; color: #5d6855; line-height: 1.8; }
+.grow-answer > .text-link { margin-top: 13px; }
+.grow-activity { margin-top: 33px; border: 1px solid #dbe1d2; border-radius: 10px; background: #f5f7f0; }
+.grow-activity summary { display: flex; align-items: center; gap: 15px; min-height: 58px; padding: 16px 21px; cursor: pointer; color: #415c3e; font-size: 13px; font-weight: 600; }
+.grow-activity summary::after { content: '+'; margin-left: 4px; font-size: 20px; font-weight: 400; }
+.grow-activity details[open] summary::after { content: '−'; }
+.grow-activity summary > span:first-child { display: inline-flex; align-items: center; gap: 9px; }
+.grow-activity-summary { margin-left: auto; font-size: 10px; font-weight: 400; color: #5c6854; }
+.grow-activity-body { padding: 0 21px 21px; }
+.grow-activity-intro, .grow-activity-status, .grow-activity-error { font-size: 12px; line-height: 1.85; color: #56664b; }
+.grow-activity-status, .grow-activity-error { margin-top: 12px; }
+.grow-activity-error { color: #793a28; }
+.grow-activity-engine { margin-top: 14px; color: #705939; font-size: 11px; line-height: 1.8; }
+.grow-activity-engine.is-timescale { color: #3f633e; }
+.grow-activity-metrics { display: flex; flex-wrap: wrap; gap: 22px 42px; margin: 17px 0 20px; }
+.grow-activity-metrics > div { display: flex; flex-direction: column-reverse; gap: 5px; }
+.grow-activity-metrics dt { color: #58694e; font-size: 11px; }
+.grow-activity-metrics dd { margin: 0; color: #365039; font: 29px/1.2 Georgia, serif; }
+.grow-activity-metrics dd > span { font: 11px 'Segoe UI', ui-sans-serif, system-ui, sans-serif; }
+.grow-activity-table-wrap { overflow-x: auto; }
+.grow-activity table { width: 100%; border-collapse: collapse; color: #445d3d; font-size: 11px; text-align: left; }
+.grow-activity caption { margin-bottom: 10px; color: #5b6851; font-size: 11px; text-align: left; }
+.grow-activity th, .grow-activity td { border-bottom: 1px solid #dce4d4; padding: 9px 12px 9px 0; line-height: 1.65; }
+.grow-activity tbody th { font-weight: 400; }
+.grow-activity-note { color: #64705b; font-size: 10px; line-height: 1.8; margin-top: 17px; }
+.grow-welcome { max-width: 740px; padding: 32px; border: 1px solid #d7e0cd; border-radius: 70px 12px 12px 12px; background: #edf2e5; }
+.grow-welcome-icon { display: inline-grid; place-items: center; width: 72px; height: 72px; margin-bottom: 19px; color: #566b45; border-radius: 50%; background: #dce7ce; }
+.grow-welcome > h2 { font-size: 31px; margin-bottom: 17px; }
+.grow-welcome > p { color: #536548; font-size: 13px; line-height: 1.85; max-width: 570px; }
+.grow-welcome > .button { margin-top: 24px; }
+.grow-welcome > .text-link { display: flex; width: fit-content; margin-top: 12px; }
+.grow-welcome > .grow-configuration-note { margin-top: 20px; padding: 13px 15px; border: 1px solid #cad7bb; border-radius: 7px; background: #f7f9f0; font-size: 12px; }
+@media (max-width: 767px) {
+  .grow-neighbor-page { padding-top: 30px; padding-bottom: 38px; }
+  .grow-intro { margin-bottom: 23px; }
+  .grow-intro h1 { font-size: 41px; margin: 13px 0 16px; }
+  .grow-intro > p { font-size: 12px; }
+  .grow-question-panel { padding: 23px 18px; }
+  .grow-panel-heading { gap: 11px; align-items: start; }
+  .grow-panel-icon { width: 39px; height: 39px; }
+  .grow-panel-heading h2 { font-size: 25px; }
+  .grow-panel-heading p { font-size: 11px; }
+  .grow-prompts { margin: 21px 0; gap: 7px; }
+  .grow-prompts > button { font-size: 11px; padding: 10px 12px; }
+  .grow-question-form > label, .grow-form-bottom > label { font-size: 12px; }
+  .grow-field-hint { font-size: 10px; gap: 8px; }
+  .grow-form-bottom { flex-direction: column; align-items: stretch; gap: 18px; }
+  .grow-form-bottom > label { max-width: none; }
+  .grow-form-bottom > .button { width: 100%; margin-left: 0; font-size: 12px; }
+  .grow-thinking { font-size: 12px; }
+  .grow-error { font-size: 12px; }
+  .grow-answer { margin-top: 27px; }
+  .grow-answer > h2 { font-size: 29px; }
+  .grow-asked { font-size: 11px; }
+  .grow-answer-text { padding: 18px; font-size: 13px; }
+  .grow-answer-note { font-size: 10px; }
+  .grow-recommendation-heading h3 { font-size: 27px; }
+  .grow-recommendation-heading p { font-size: 11px; }
+  .grow-activity { margin-top: 27px; }
+  .grow-activity summary { flex-wrap: wrap; padding-inline: 16px; gap: 6px; font-size: 12px; }
+  .grow-activity-summary { font-size: 9px; }
+  .grow-activity-body { padding: 0 16px 19px; }
+  .grow-activity-metrics { gap: 20px; }
+  .grow-activity-metrics dt { font-size: 10px; }
+  .grow-activity-metrics dd { font-size: 26px; }
+  .grow-welcome { padding: 27px 23px; border-top-left-radius: 55px; }
+  .grow-welcome > h2 { font-size: 29px; }
+  .grow-welcome > p { font-size: 12px; }
+  .grow-welcome > .button { width: 100%; font-size: 11px; padding-inline: 13px; }
+}

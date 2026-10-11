@@ -7,7 +7,10 @@ import { fileURLToPath } from 'node:url'
 import pg from 'pg'
 
 const repository = fileURLToPath(new URL('..', import.meta.url))
-const image = 'postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24'
+const timescale = process.argv.includes('--timescale')
+const image = timescale
+  ? 'timescale/timescaledb:latest-pg17@sha256:836e3eda797a144f6327b9a280c7c30368e4158ecb5f4bc0012aa3247c2b4018'
+  : 'postgres:17-alpine@sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24'
 const container = `rooted-test-db-${process.pid}-${randomBytes(6).toString('hex')}`
 let containerStarted = false
 let interrupted
@@ -74,7 +77,7 @@ function runTests(filenames, testUrl) {
       stdio: 'inherit',
       // Blank the application URL so dotenv cannot restore it, and scope the
       // disposable database URL to this child alone. No app credentials are used.
-      env: { ...process.env, DATABASE_URL: '', DATABASE_TEST_URL: testUrl },
+      env: { ...process.env, DATABASE_URL: '', DATABASE_TEST_URL: testUrl, GEMINI_API_KEY: '', ROOTED_TEST_TIMESCALE: timescale ? '1' : '0' },
     })
     tests.on('error', () => reject(new Error('Could not start the Node test runner.')))
     tests.on('close', (code, signal) => resolveTests(code ?? signalExitCode(signal)))
@@ -88,7 +91,7 @@ try {
     .sort()
   if (!filenames.length) throw new Error('No Node test files were found in tests/.')
   checkInterrupted()
-  console.log('Starting a disposable PostgreSQL 17 database for all Node tests…')
+  console.log(`Starting a disposable ${timescale ? 'Timescale/PostgreSQL 17' : 'PostgreSQL 17'} database for all Node tests…`)
   // Mark this unique name for cleanup before starting Docker, including startup
   // failures or signals. Existing containers are never inspected or removed.
   containerStarted = true
@@ -99,6 +102,7 @@ try {
   if (!match || Number(match[1]) < 1 || Number(match[1]) > 65535) throw new Error('Docker did not provide the expected loopback-only database port.')
   const port = Number(match[1])
   await waitForPostgres(port)
+  if (timescale) await docker(['exec', container, 'psql', '-U', 'postgres', '-d', 'rooted_test', '-v', 'ON_ERROR_STOP=1', '-c', 'CREATE EXTENSION IF NOT EXISTS timescaledb'])
   checkInterrupted()
   console.log('PostgreSQL is ready. Running all Node tests against the disposable database.')
   process.exitCode = await runTests(filenames, `postgresql://postgres@127.0.0.1:${port}/rooted_test?sslmode=disable`)
