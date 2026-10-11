@@ -6,6 +6,40 @@ Rooted is a mobile-first environmental community platform for HackNC 2026. Supab
 
 The default sample preview contains nine clearly fictional events. Sample events cannot be joined or edited and never earn verified impact. Live mode uses the server API and reports connection errors instead of switching to fictional data.
 
+## AI use disclosure
+
+For our HackNC 2026 / Devpost submission, we disclose both the AI integrated into Rooted and the AI assistance used to build it.
+
+### AI in the application
+
+**Google Gemini** powers **Grow Neighbor** through the official `@google/genai` SDK. The default model alias is `gemini-flash-lite-latest`, configurable through `GEMINI_MODEL`. Its implemented uses are:
+
+- **Sustainability guidance:** generate short answers to environmental education questions and practical preparation advice for volunteering.
+- **Event recommendations:** interpret a neighbor's question and optional city, then select up to three matching events from eligible records retrieved from Tiger Data. The backend supplies at most 30 future, published, non-sample events with available capacity. Gemini returns guidance and event IDs; displayed event titles, dates, locations and availability come from database records.
+- **Integration verification:** `npm run check:gemini` makes a real Gemini request with a fixed, nonpersonal question to check the configured key and model independently of the full application flow.
+
+Gemini runs on the server. Request context contains the user's question, optional city, and selected event fields: ID, title, a shortened description, category, dates, city, public meeting location, participant count, capacity and difficulty. Rooted does not automatically add account profiles, email addresses, user IDs, Supabase access tokens, database credentials or previous conversation history to that context. Anything a user types into the question is sent to Gemini. Google's handling of those requests is subject to the provider's policies.
+
+Tiger Data supplies the application records used to ground recommendations. Its Timescale integration stores private assistant request metadata—user UUID, timestamp, model, latency, outcome, recommendation count and error code—and produces hourly activity summaries. These analytics do not store questions or generated answers.
+
+The backend validates structured output and event IDs, removes duplicates and rechecks availability after generation. Provider failures are shown as errors, with no fictional successful fallback. AI guidance can still be inaccurate. Joining events, changing profiles and recording registrations use authenticated application operations; Gemini does not perform those actions, verify attendance or award environmental impact. AI-assisted event-description writing remains a future feature. No custom model training or fine-tuning is implemented.
+
+### AI assistance during development
+
+**OpenAI Codex, an AI coding assistant, was used extensively during this hackathon.** Substantial portions of the application code, tests, sample content and documentation were generated or revised with AI assistance, including:
+
+- Project planning, architecture, feature prioritization and the demo workflow.
+- React scaffolding, page layouts, styling, responsive behavior, accessibility, interface copy and clearly fictional sample event fixtures.
+- Backend API handlers, Supabase authentication, validation, Tiger Data queries and migrations, event creation and registration logic, Timescale activity tracking, and the Gemini integration and prompt.
+- Unit, database integration and browser tests, controlled test responses, code review, and debugging of local/backend connectivity, Vite/Vercel routing and production authentication.
+- Setup scripts, cloud environment instructions, README and service/demo/deployment guides, deployment configuration, and GitHub release preparation and checks.
+
+The project creator supplied the product direction, selected priorities, configured external services and credentials, ran local service checks, and approved publication. Validation included automated unit tests, disposable PostgreSQL/Timescale integration tests, browser checks and real Gemini connectivity requests. Automated tests also use controlled or mocked provider responses; those fixtures are separate from live application answers and do not establish production readiness by themselves.
+
+### Assets
+
+The bundled landscape photographs come from the MIT-licensed Start Bootstrap Grayscale template, credited below. They are third-party illustrative assets rather than AI-generated photographs.
+
 ## Development
 
 Use Node 24 (or Node 22.12+ for ordinary local development):
