@@ -47,6 +47,26 @@ test('authentication requires a bearer token and configuration accepts only secu
   assert.equal(getAuthConfiguration({ SUPABASE_URL: 'https://example.supabase.co', SUPABASE_PUBLISHABLE_KEY: '   ' }), null)
 })
 
+test('authentication chooses the complete browser project before stale server settings and never mixes pairs', () => {
+  assert.deepEqual(getAuthConfiguration({
+    VITE_SUPABASE_URL: ' https://working-project.supabase.co ', VITE_SUPABASE_PUBLISHABLE_KEY: ' working-public-key ',
+    SUPABASE_URL: 'https://stale-host.invalid', SUPABASE_PUBLISHABLE_KEY: 'stale-server-key',
+  }), { url: 'https://working-project.supabase.co', key: 'working-public-key' })
+  assert.deepEqual(getAuthConfiguration({
+    SUPABASE_URL: 'https://standalone-project.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'standalone-key',
+  }), { url: 'https://standalone-project.supabase.co', key: 'standalone-key' })
+  assert.deepEqual(getAuthConfiguration({
+    VITE_SUPABASE_URL: 'https://incomplete-public.supabase.co',
+    SUPABASE_URL: 'https://standalone-project.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'standalone-key',
+  }), { url: 'https://standalone-project.supabase.co', key: 'standalone-key' })
+  for (const environment of [
+    { VITE_SUPABASE_URL: 'https://one-project.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'another-project-key' },
+    { SUPABASE_URL: 'https://one-project.supabase.co', VITE_SUPABASE_PUBLISHABLE_KEY: 'another-project-key' },
+    { VITE_SUPABASE_URL: 'https://one-project.supabase.co', VITE_SUPABASE_PUBLISHABLE_KEY: '   ' },
+    { VITE_SUPABASE_URL: 'not-a-url', VITE_SUPABASE_PUBLISHABLE_KEY: 'public-key', SUPABASE_URL: 'https://valid-server.supabase.co', SUPABASE_PUBLISHABLE_KEY: 'server-key' },
+  ]) assert.equal(getAuthConfiguration(environment), null)
+})
+
 test('auth requests preserve request options and caller cancellation, and abort stalled upstream requests', async () => {
   const server = createServer((request, response) => {
     if (request.url === '/stall') return

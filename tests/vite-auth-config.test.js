@@ -7,7 +7,7 @@ import { fileURLToPath } from 'node:url'
 const project = fileURLToPath(new URL('../', import.meta.url))
 const execute = promisify(execFile)
 
-test('Vite API verifies against the browser mode configuration despite stale server settings; builds preserve server precedence', async () => {
+test('Vite API and production verification use the complete browser project despite stale server settings', async () => {
   // Isolate process.env changes, env files, mock authentication, and Vite caches
   // from the developer's running server and real provider configuration.
   const environment = {
@@ -73,15 +73,24 @@ test('Vite API verifies against the browser mode configuration despite stale ser
       await vite.close()
       vite = null
 
-      process.env.SUPABASE_URL = 'https://production-server.example.com'
+      process.env.SUPABASE_URL = 'https://stale-production-server.invalid'
       process.env.SUPABASE_PUBLISHABLE_KEY = 'production-server-key'
-      process.env.VITE_SUPABASE_URL = 'https://production-frontend.example.com'
-      process.env.VITE_SUPABASE_PUBLISHABLE_KEY = 'production-frontend-key'
+      process.env.VITE_SUPABASE_URL = origin
+      process.env.VITE_SUPABASE_PUBLISHABLE_KEY = 'mode-public-key'
       await resolveConfig({ configFile: join(process.cwd(), 'vite.config.js'), envDir: directory, logLevel: 'silent' }, 'build')
+      assert.equal(process.env.SUPABASE_URL, 'https://stale-production-server.invalid')
       const { getAuthConfiguration } = await import('./server/config.js')
       assert.deepEqual(getAuthConfiguration(), {
-        url: 'https://production-server.example.com', key: 'production-server-key',
+        url: origin, key: 'mode-public-key',
       })
+      const { verifyAccessToken } = await import('./server/auth.js')
+      assert.deepEqual(await verifyAccessToken('local-auth-regression-token'), {
+        id: '11111111-1111-4111-8111-111111111111',
+      })
+      assert.deepEqual(requests, [
+        { path: '/auth/v1/user', key: 'mode-public-key' },
+        { path: '/auth/v1/user', key: 'mode-public-key' },
+      ])
       console.log('ROOTED_VITE_AUTH_CHECK_PASSED')
     } finally {
       if (vite) await vite.close()

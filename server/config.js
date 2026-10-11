@@ -10,8 +10,13 @@ export function loadServerEnvironment(directory = process.cwd()) {
 loadServerEnvironment()
 
 export function getAuthConfiguration(environment = process.env) {
-  const url = (environment.SUPABASE_URL || environment.VITE_SUPABASE_URL)?.trim()
-  const key = (environment.SUPABASE_PUBLISHABLE_KEY || environment.VITE_SUPABASE_PUBLISHABLE_KEY)?.trim()
+  // The browser and API authenticate the same Supabase project. Choose one
+  // complete pair before verification; never combine settings from two pairs.
+  const publicUrl = environment.VITE_SUPABASE_URL?.trim()
+  const publicKey = environment.VITE_SUPABASE_PUBLISHABLE_KEY?.trim()
+  const usePublic = Boolean(publicUrl && publicKey)
+  const url = usePublic ? publicUrl : environment.SUPABASE_URL?.trim()
+  const key = usePublic ? publicKey : environment.SUPABASE_PUBLISHABLE_KEY?.trim()
   if (!url || !key) return null
   try {
     const parsed = new URL(url)

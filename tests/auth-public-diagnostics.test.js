@@ -10,7 +10,7 @@ async function invoke(handler, path, token) {
   return { status: response.statusCode, body: response.body }
 }
 
-test('opt-in production auth diagnostics identify project mismatches and dashboard paths without disclosing settings', async () => {
+test('opt-in auth diagnostics describe the effective browser project and server fallback without disclosing settings', async () => {
   const environment = {
     SUPABASE_URL: 'https://server-project.supabase.co/', SUPABASE_PUBLISHABLE_KEY: 'server-public-key',
     VITE_SUPABASE_URL: 'https://frontend-project.supabase.co', VITE_SUPABASE_PUBLISHABLE_KEY: 'frontend-public-key',
@@ -18,7 +18,7 @@ test('opt-in production auth diagnostics identify project mismatches and dashboa
   const handler = createApiHandler({ databaseConfigured: false, authEnvironment: environment })
   assert.equal((await invoke(handler, '/api/health')).body.authentication, undefined)
   const mismatch = await invoke(handler, '/api/health?diagnostics=auth')
-  assert.deepEqual(mismatch.body.authentication, { matchesFrontend: false, urlIsOrigin: true })
+  assert.deepEqual(mismatch.body.authentication, { matchesFrontend: true, urlIsOrigin: true })
   assert.doesNotMatch(JSON.stringify(mismatch.body), /server-project|frontend-project|public-key/)
 
   environment.SUPABASE_URL = ' https://frontend-project.supabase.co/ '
@@ -28,10 +28,11 @@ test('opt-in production auth diagnostics identify project mismatches and dashboa
 
   environment.SUPABASE_URL = 'https://supabase.com/dashboard/project/example'
   assert.deepEqual((await invoke(handler, '/api/health?diagnostics=auth')).body.authentication,
-    { matchesFrontend: false, urlIsOrigin: false })
+    { matchesFrontend: true, urlIsOrigin: true })
 
   environment.VITE_SUPABASE_URL = ''
-  assert.equal((await invoke(handler, '/api/health?diagnostics=auth')).body.authentication.matchesFrontend, null)
+  assert.deepEqual((await invoke(handler, '/api/health?diagnostics=auth')).body.authentication,
+    { matchesFrontend: null, urlIsOrigin: false })
 })
 
 test('auth failure responses expose only approved reason codes and never arbitrary error metadata', async () => {

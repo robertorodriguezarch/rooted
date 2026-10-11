@@ -31,12 +31,12 @@ test('auth connection check probes the real SDK paths without a user token or ac
   assertSafe(result)
 })
 
-test('auth diagnostics stop before requests for missing or mismatched project settings', async () => {
+test('auth diagnostics stop before requests for missing or incomplete project settings', async () => {
   let calls = 0
   const fetchImpl = async () => { calls += 1; throw new Error('Should not be called') }
   for (const environment of [
-    {}, { ...configuration, SUPABASE_URL: 'https://different-project.example.com' },
-    { ...configuration, SUPABASE_PUBLISHABLE_KEY: 'different-key' },
+    {}, { VITE_SUPABASE_URL: configuration.VITE_SUPABASE_URL },
+    { SUPABASE_URL: configuration.SUPABASE_URL, VITE_SUPABASE_PUBLISHABLE_KEY: configuration.VITE_SUPABASE_PUBLISHABLE_KEY },
     { ...configuration, VITE_SUPABASE_PUBLISHABLE_KEY: '' },
   ]) {
     const result = await checkAuthConnection({ environment, fetchImpl })
@@ -44,6 +44,20 @@ test('auth diagnostics stop before requests for missing or mismatched project se
     assertSafe(result)
   }
   assert.equal(calls, 0)
+})
+
+test('auth diagnostics probe the complete frontend project instead of a stale server host', async () => {
+  const requests = []
+  const result = await checkAuthConnection({ environment: {
+    ...configuration, SUPABASE_URL: 'https://stale-server.invalid', SUPABASE_PUBLISHABLE_KEY: 'stale-server-key',
+  }, fetchImpl: async (url, options) => {
+    requests.push(url)
+    assert.equal(options.headers.apikey, configuration.VITE_SUPABASE_PUBLISHABLE_KEY)
+    return jsonResponse(requests.length === 1 ? 200 : 401)
+  } })
+  assert.equal(result.ok, true)
+  assert.deepEqual(requests, ['https://private-project.example.com/auth/v1/settings', 'https://private-project.example.com/auth/v1/user'])
+  assertSafe(result)
 })
 
 test('auth diagnostics report status codes without printing rejected settings or provider bodies', async () => {

@@ -11,8 +11,8 @@ In the project's **Settings → Environment Variables**, configure the following
 | `VITE_SUPABASE_URL` | `https://tkcakmhjmqxshsuqfbtq.supabase.co` |
 | `VITE_SUPABASE_PUBLISHABLE_KEY` | The project's public publishable key |
 | `VITE_DATA_MODE` | `live` |
-| `SUPABASE_URL` | Exactly the same project API URL as `VITE_SUPABASE_URL` |
-| `SUPABASE_PUBLISHABLE_KEY` | Exactly the same public key as `VITE_SUPABASE_PUBLISHABLE_KEY` |
+| `SUPABASE_URL` | Optional server-only fallback; use the same project API URL as `VITE_SUPABASE_URL` |
+| `SUPABASE_PUBLISHABLE_KEY` | Optional server-only fallback; use the same public key as `VITE_SUPABASE_PUBLISHABLE_KEY` |
 | `DATABASE_URL` | The existing Tiger Data PostgreSQL URL with verified TLS |
 | `GEMINI_API_KEY` | The real Google Gemini key, entered directly into Vercel |
 | `GEMINI_MODEL` | `gemini-flash-lite-latest` |
@@ -35,6 +35,6 @@ Push the verified release to `main`, or redeploy the latest `main` deployment in
 4. Expand Recommendation activity and verify **Timescale hypertable**, a successful request and its hourly bucket. PostgreSQL-only labels do not establish the Timescale requirement.
 5. Sign out and confirm protected operations require sign-in. Verify email confirmation/recovery redirects separately if recording those flows.
 
-Backend authentication uses explicit `SUPABASE_*` settings in production, falling back to `VITE_*` if absent. Match the settings across both sides; the Vite development synchronization only applies to local development. Gemini errors remain visible and never produce a fabricated successful fallback. Organizer verification, community management and impact leaderboards remain later work.
+Backend authentication uses the complete `VITE_SUPABASE_URL` and `VITE_SUPABASE_PUBLISHABLE_KEY` pair in production, matching the browser's project even when duplicate `SUPABASE_*` settings are stale. A complete `SUPABASE_*` pair is used only when a complete public pair is absent. URL and key pairs are never mixed, and rejected tokens are not retried against another project. Gemini errors remain visible and never produce a fabricated successful fallback. Organizer verification, community management and impact leaderboards remain later work.
 
 If production reports `auth_unavailable`, `/api/health?diagnostics=auth` adds two safe booleans: `matchesFrontend` compares the configured project URL and public key, and `urlIsOrigin` rejects dashboard paths, query strings and embedded credentials as a diagnostic. Missing comparison settings produce `null`. These diagnostics reveal no setting values and do not prove connectivity. Failed session verification also includes a bounded `reason`, such as `ENOTFOUND`, a certificate code, `timeout`, `non_json_response` or `upstream_5xx`; raw errors, tokens and provider bodies remain private. If settings match, investigate that reason rather than changing the database or bypassing authentication. Workspace proxy variables should not be copied into Vercel Production.
