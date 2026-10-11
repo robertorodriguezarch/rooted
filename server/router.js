@@ -169,7 +169,22 @@ export function createApiHandler(options = {}) {
           } catch { /* Health reports only readiness, never connection details. */ }
         }
         const status = !configured || !auth ? 'unconfigured' : database ? 'ready' : 'degraded'
-        return reply(response, status === 'ready' ? 200 : 503, { status, database, auth })
+        const body = { status, database, auth }
+        if (url.searchParams.get('diagnostics') === 'auth') {
+          const environment = options.authEnvironment ?? process.env
+          const server = getAuthConfiguration(environment)
+          const frontend = getAuthConfiguration({
+            VITE_SUPABASE_URL: environment.VITE_SUPABASE_URL,
+            VITE_SUPABASE_PUBLISHABLE_KEY: environment.VITE_SUPABASE_PUBLISHABLE_KEY,
+          })
+          const normalize = (value) => value.replace(/\/+$/, '')
+          const configuredUrl = server ? new URL(server.url) : null
+          body.authentication = {
+            matchesFrontend: server && frontend ? normalize(server.url) === normalize(frontend.url) && server.key === frontend.key : null,
+            urlIsOrigin: configuredUrl ? configuredUrl.pathname === '/' && !configuredUrl.search && !configuredUrl.hash && !configuredUrl.username && !configuredUrl.password : null,
+          }
+        }
+        return reply(response, status === 'ready' ? 200 : 503, body)
       }
 
       if (path === '/api/events' && method === 'GET') {
@@ -276,7 +291,7 @@ export function createApiHandler(options = {}) {
       throw new ApiError(404, 'This API route could not be found.', 'route_not_found')
     } catch (error) {
       const safe = publicError(error)
-      reply(response, safe.status, { error: { code: safe.code, message: safe.message } })
+      reply(response, safe.status, { error: { code: safe.code, message: safe.message, ...(safe.reason ? { reason: safe.reason } : {}) } })
     }
   }
 }
